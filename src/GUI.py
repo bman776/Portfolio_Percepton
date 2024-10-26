@@ -52,6 +52,7 @@ class GUI:
 
     # DEV NOTE:
     # This function both validates the data set and ensures its valid values are converted to numeric data type
+    # EDIT: Not sure if the dataframe contents are in fact being converted to numeric here
     def validateDataSet(self, dataSet: pandas.DataFrame) -> bool:
         # Check if last column is binary categorical feature in values [-1, 1]
         lastFeatureValid: bool = dataSet.iloc[:,-1].isin([-1,1]).all()

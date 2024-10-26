@@ -8,12 +8,19 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
 class DataSet:
-    def __init__(self) -> None:
-        self.dataFrame: pandas.DataFrame = pandas.DataFrame()
+    def __init__(self, data: pandas.DataFrame = pandas.DataFrame()) -> None:
+        self.dataFrame: pandas.DataFrame = data
+
+        self.featureMatrix: pandas.DataFrame = pandas.DataFrame()
+        self.DependentVector: numpy.ndarray = numpy.ndarray([]) 
         self.featureMatrix_train: numpy.ndarray = numpy.ndarray([])
         self.featureMatrix_test: numpy.ndarray = numpy.ndarray([])
         self.DependentVector_train: numpy.ndarray = numpy.ndarray([])
         self.DependentVector_test: numpy.ndarray = numpy.ndarray([])
+
+        self.numericImputer: SimpleImputer = SimpleImputer(missing_values=numpy.nan, strategy="mean")
+        self.stdScaler_train: StandardScaler = StandardScaler()
+        self.stdScaler_test: StandardScaler = StandardScaler()
 
     def validateDataSet(self, dataSet: pandas.DataFrame) -> bool:
         # Check if last column is binary categorical feature in values [-1, 1]
@@ -49,36 +56,24 @@ class DataSet:
         )
     
     def addressMissingIV_vals_meanInsert(self) -> None:
-        numericImputer  = SimpleImputer(missing_values=numpy.nan, strategy="mean")
+        numericImputer = SimpleImputer(missing_values=numpy.nan, strategy="mean")
         numericImputer.fit(self.dataFrame[self.dataFrame.columns[:-1]])
         self.dataFrame[self.dataFrame.columns[:-1]] = numericImputer.transform(
             self.dataFrame[self.dataFrame.columns[:-1]]
         )
 
     def test_train_splitDataSet(self) -> None:
-        featureMatrix = self.dataFrame.iloc[:,:-1]
-        dependentVector = self.dataFrame.iloc[:,-1]
+        self.featureMatrix = self.dataFrame.iloc[:,:-1]
+        self.dependentVector = self.dataFrame.iloc[:,-1]
         self.featureMatrix_train, self.featureMatrix_test, self.DependentVector_train, self.DependentVector_test = train_test_split(
-            featureMatrix,
-            dependentVector,
+            self.featureMatrix,
+            self.dependentVector,
             test_size=0.2,
             random_state=0
         )
 
     def featureScale_trainingSet(self) -> None:
-        stdScaler = StandardScaler()
-        self.featureMatrix_train = stdScaler.fit_transform(self.featureMatrix_train)
-        self.featureMatrix_test = stdScaler.fit_transform(self.featureMatrix_test)
-    
-
-         
-
-        """
-        numericImputer = SimpleImputer(missing_values=numpy.nan, strategy="mean")
-        numericImputer.fit(
-            dataSet[dataSet.columns[:-1]]
-        )
-        result:pandas.DataFrame = numericImputer.transform(
-            dataSet[dataSet.columns[:-1]]
-        )
-        return result"""
+        self.stdScaler_train.fit(self.featureMatrix_train)
+        self.stdScaler_test.fit(self.featureMatrix_test)
+        self.featureMatrix_train = self.stdScaler_train.transform(self.featureMatrix_train)
+        self.featureMatrix_test = self.stdScaler_test.transform(self.featureMatrix_test)
