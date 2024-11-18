@@ -22,16 +22,28 @@ class DataSet:
         self.stdScaler_train: StandardScaler = StandardScaler()
         self.stdScaler_test: StandardScaler = StandardScaler()
 
-    def validateDataSet(self, dataSet: pandas.DataFrame) -> bool:
+    def loadData(self, data: pandas.DataFrame = pandas.DataFrame()) -> None:
+        self.dataFrame = data
+
+    def getFeatureDimensions(self) -> int:
+        if not(self.featureMatrix.empty):
+            return self.featureMatrix.shape[1]
+        else:
+            return -1
+
+    # DEV NOTE:
+    # This function both validates the data set and ensures its valid values are converted to numeric data type
+    # EDIT: Not sure if the dataframe contents are in fact being converted to numeric here
+    def validateDataSet(self) -> bool:
         # Check if last column is binary categorical feature in values [-1, 1]
-        lastFeatureValid: bool = dataSet.iloc[:,-1].isin([-1,1]).all()
+        lastFeatureValid: bool = self.dataFrame.iloc[:,-1].isin([-1,1]).all()
 
         # Check if all columns except the last contain only numeric value
         remFeaturesValid: bool = True
-        for col in dataSet.columns[:-1]:
+        for col in self.dataFrame.columns[:-1]:
             # check if current column is numeric by attempting to convert its string values to numeric values 
             try:
-                dataSet[col] = pandas.to_numeric(dataSet[col], errors='raise')
+                self.dataFrame[col] = pandas.to_numeric(self.dataFrame[col], errors='raise')
             except ValueError as e:
                 remFeaturesValid = False
                 break
@@ -44,6 +56,7 @@ class DataSet:
     # DEV NOTE:
     # The data set could be quite large, should have data preprocessing functions modify the data set in place
     # instead of modifying and returning copies 
+
     def preprocessDataSet(self) -> None:
         self.addressMissingDV_vals_rowRemoval()
         self.addressMissingIV_vals_meanInsert()
@@ -54,7 +67,7 @@ class DataSet:
         self.dataFrame.dropna(
             subset=[self.dataFrame.columns[-1]], inplace=True
         )
-    
+
     def addressMissingIV_vals_meanInsert(self) -> None:
         numericImputer = SimpleImputer(missing_values=numpy.nan, strategy="mean")
         numericImputer.fit(self.dataFrame[self.dataFrame.columns[:-1]])
@@ -71,7 +84,7 @@ class DataSet:
             test_size=0.2,
             random_state=0
         )
-
+    
     def featureScale_trainingSet(self) -> None:
         self.stdScaler_train.fit(self.featureMatrix_train)
         self.stdScaler_test.fit(self.featureMatrix_test)

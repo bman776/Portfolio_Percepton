@@ -1,7 +1,7 @@
 
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]), "src"))
-import GUI
+import Data
 
 import pandas
 import random
@@ -26,7 +26,7 @@ class Test_validateDataSet_Function(unittest.TestCase):
 
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
-        self.testGUI: GUI.GUI = GUI.GUI()
+        self.dataSet: Data.DataSet = Data.DataSet()
         
     @classmethod
     def generateRandomValid_CSV(cls, fileName: str, num_rows: int, num_cols: int) -> None:
@@ -53,54 +53,61 @@ class Test_validateDataSet_Function(unittest.TestCase):
     def test_validDataSetProvided(self):
         testDataSetPath = os.path.join(dataDirectory, "validDataSet1_sml.csv")
         self.generateRandomValid_CSV(testDataSetPath, 5, 5)
-        self.assertTrue(
-            self.testGUI.validateDataSet(
+        self.dataSet.loadData(
                 pandas.read_csv(testDataSetPath)
-            )
         )
+        self.assertTrue(
+            self.dataSet.validateDataSet()
+        )
+
         testDataSetPath = os.path.join(dataDirectory, "validDataSet2_med.csv")
         self.generateRandomValid_CSV(testDataSetPath, 20, 5)
-        self.assertTrue(
-            self.testGUI.validateDataSet(
+        self.dataSet.loadData(
                 pandas.read_csv(testDataSetPath)
-            )
+        )
+        self.assertTrue(
+            self.dataSet.validateDataSet()
         )
 
         testDataSetPath = os.path.join(dataDirectory, "validDataSet3_lrg.csv")
         self.generateRandomValid_CSV(testDataSetPath, 100, 6)
-        self.assertTrue(
-            self.testGUI.validateDataSet(
+        self.dataSet.loadData(
                 pandas.read_csv(testDataSetPath)
-            )
+        )
+        self.assertTrue(
+            self.dataSet.validateDataSet()
         )
 
     def test_validDataSetProvided_missingValues(self):
         testDataSetPath = os.path.join(dataDirectory, "validDataSet4_missingVals.csv")
-        self.assertTrue(
-            self.testGUI.validateDataSet(
+        self.dataSet.loadData(
                 pandas.read_csv(
                     testDataSetPath, 
                     na_values=["", " ", "\t", "NULL", "NaN", "n/a", "N/A", "-", "*", "?"], 
                     skipinitialspace=True
                 )
-            )
         )
-
+        self.assertTrue(
+            self.dataSet.validateDataSet()
+        )
+    
 
     def test_invalidDataSetProvided_finalFeatureNotBinaryCategorical(self):
         testDataSetPath = os.path.join(dataDirectory, "invalidDataSet1_finalFeatureNotBinaryCategorical.csv")
-        self.assertFalse(
-            self.testGUI.validateDataSet(
+        self.dataSet.loadData(
                 pandas.read_csv(testDataSetPath)
-            )
+        )
+        self.assertFalse(
+            self.dataSet.validateDataSet()
         )
 
     def test_invalidDataSetProvided_nonFinalFeatureIsNonNumeric(self):
         testDataSetPath = os.path.join(dataDirectory, "invalidDataSet2_nonFinalFeatureIsNonNumeric.csv")
-        self.assertFalse(
-            self.testGUI.validateDataSet(
+        self.dataSet.loadData(
                 pandas.read_csv(testDataSetPath)
-            )
+        )
+        self.assertFalse(
+            self.dataSet.validateDataSet()
         )
 
 if __name__ == "__main__":

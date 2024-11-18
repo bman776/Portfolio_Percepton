@@ -1,3 +1,6 @@
+from Data import DataSet
+from Model import Perceptron
+
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog
@@ -17,9 +20,11 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 class GUI:
     def __init__(self) -> None:
-
         # define Empty data set to store input dataset
-        self.dataSet: pandas.DataFrame = pandas.DataFrame()
+        self.dataSet: DataSet = DataSet()
+
+        # define Model object
+        self.perceptron: Perceptron = Perceptron()
 
         # define GUI
         # Create main window
@@ -50,71 +55,37 @@ class GUI:
         self.rootWindow.mainloop()
 
 
-    # DEV NOTE:
-    # This function both validates the data set and ensures its valid values are converted to numeric data type
-    # EDIT: Not sure if the dataframe contents are in fact being converted to numeric here
-    def validateDataSet(self, dataSet: pandas.DataFrame) -> bool:
-        # Check if last column is binary categorical feature in values [-1, 1]
-        lastFeatureValid: bool = dataSet.iloc[:,-1].isin([-1,1]).all()
-
-        # Check if all columns except the last contain only numeric value
-        remFeaturesValid: bool = True
-        for col in dataSet.columns[:-1]:
-            # check if current column is numeric by attempting to convert its non-NaN string 
-            # values to numeric values 
-            try:
-                # select non-Nan values from the current column
-                col_nonNaNVals = dataSet[col][dataSet[col].notna()]
-                # attempt conversion
-                pandas.to_numeric(col_nonNaNVals, errors='raise')
-            except ValueError as e:
-                remFeaturesValid = False
-                break
-
-            # column has valid format (valid values)
-            dataSet[col] = pandas.to_numeric(dataSet[col], errors='coerce')
-
-        if not (lastFeatureValid and remFeaturesValid):
-            return False
-        
-        return True
-        
-
-    def buildModel(self) -> None:
-        pass
-            
         
     def loadDataSet_csv(self):
         filePath = filedialog.askopenfilename(title="Open Data Set", filetypes=[("CSV files", "*.csv")])
         if filePath:
             # Get Input Data
-            dataSet:pandas.DataFrame = pandas.read_csv(
-                filePath, 
-                na_values=["", " ", "\t", "NULL", "NaN", "n/a", "N/A", "-", "*", "?"], 
-                skipinitialspace=True
+            self.dataSet.loadData(
+                pandas.read_csv(
+                    filePath, 
+                    na_values=["", " ", "\t", "NULL", "NaN", "n/a", "N/A", "-", "*", "?"], 
+                    skipinitialspace=True
+                )
             )
             # DEV NOTE: pandas.read_csv() fills in missing data values w/ NaN
 
             # Validate Input Data
-            dataValid: bool = self.validateDataSet(dataSet)
-            if dataValid:
-                
-                # Store Input Data
-                self.dataSet = dataSet
+            dataValid: bool = self.dataSet.validateDataSet()
 
+            if dataValid:
                 # Load data set into GUI
 
                 # Clear previous data from GUI
                 self.data_tree.delete(*self.data_tree.get_children())
 
                 # Load current data  
-                header = list(dataSet.columns)
+                header = list(self.dataSet.dataFrame.columns)
                 self.data_tree["columns"] = header
                 for col in header:
                     self.data_tree.heading(col, text=col)
                     self.data_tree.column(col, width=100)
 
-                for index, row in dataSet.iterrows():
+                for index, row in self.dataSet.dataFrame.iterrows():
                     self.data_tree.insert("", "end", values=list(row))
 
                 self.status_label.config(text=f"CSV file loaded: {filePath}")
@@ -127,3 +98,15 @@ class GUI:
                 )
 
 
+
+    def buildModel(self) -> None:
+        self.dataSet.preprocessDataSet()
+
+        # DEV NOTE: may change name of loadDataSet function for perceptron class
+        # only reason to give data to model object is so it can actually build model
+        
+        self.perceptron.loadDataSet(self.dataSet)
+        self.perceptron.executeLearningAlgorithm()
+
+    def displayModel(self) -> None:
+        
