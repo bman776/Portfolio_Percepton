@@ -45,36 +45,6 @@ class TestModelBuilding(unittest.TestCase):
         )
         self.assertEqual(misclassifiedData.size,0)
 
-    @unittest.skip("skipping test_modelOnTrainingData_DataPreprocesse")
-    def test_modelOnTrainingData_DataPreprocessed(self):
-        self.assertTrue(True)
-
-
-    @unittest.skip("skipping test_generateDataSet_DEPRECATED")
-    def test_generateDataSet_DEPRECATED(self):
-        X1:numpy.ndarray = numpy.array([
-            [8, 7], [4, 10], [9, 7], [7, 10], 
-            [9, 6], [4, 8], [10, 10]
-        ])
-        y1: numpy.ndarray = numpy.ones(len(X1))
-        X2:numpy.ndarray = numpy.array([
-            [2, 7], [8, 3], [7, 5], [4, 4], 
-            [4, 6], [1, 3], [2, 5]
-        ])
-        y2: numpy.ndarray = numpy.ones(len(X2)) * -1
-
-        X = numpy.vstack((X1, X2))
-        y = numpy.hstack((y1, y2))
-
-
-        print(X)
-
-        print("\n---\n")
-
-        print(y)
-
-        self.assertTrue(True)
-
 
 if __name__ == '__main__':
     unittest.main()
