@@ -62,7 +62,22 @@ class Perceptron:
                 self.dataSet.featureMatrix_train == x, axis=1
             )
         )[0]
-        y = float(self.dataSet.DependentVector_train[indices[0]])
+        index = indices[0]
+
+        # DEBUGGING
+        #print(type(index))
+        #print(type(self.dataSet.DependentVector_train))
+        #for indx, value in enumerate(self.dataSet.DependentVector_train):
+        #    print(f"Index: {indx}, Value: {value}")
+        #print("\n ----- \n")
+
+        # DEBUGGING NOTE:
+        # run time error is occuring here and may be due to fact that self.dataSet.DependentVector_train 
+        # is a pandas Series instead of a numpy ndarray by the time execution reaches here.
+        # pandas Series use label-based indexing, so if a series is replacing the expected numpy ndarray
+        # this may explain why the code is breaking here
+
+        y = float(self.dataSet.DependentVector_train[index])
         return x, y
 
 

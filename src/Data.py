@@ -77,13 +77,16 @@ class DataSet:
 
     def test_train_splitDataSet(self) -> None:
         self.featureMatrix = self.dataFrame.iloc[:,:-1]
-        self.dependentVector = self.dataFrame.iloc[:,-1]
+        # DEV NOTE:
+        # .iloc() function returns a series when a single row or col is being extracted from a dataframe
+        self.dependentVector = self.dataFrame.iloc[:,-1].to_numpy()
         self.featureMatrix_train, self.featureMatrix_test, self.DependentVector_train, self.DependentVector_test = train_test_split(
             self.featureMatrix,
             self.dependentVector,
             test_size=0.2,
             random_state=0
         )
+       
     
     def featureScale_trainingSet(self) -> None:
         self.stdScaler_train.fit(self.featureMatrix_train)
